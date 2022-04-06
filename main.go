@@ -14,7 +14,7 @@ type Input struct {
 }
 
 func searchInterval(x []float32, delta, lambda float32, x0 []float32) []float32 {
-	var k []float32
+	k := make([]float32, len(x0)+1)
 	var h float32
 	k[0] = x0[0] + lambda*(x[0]-x0[0])
 	k[1] = x0[1] + lambda*(x[1]-x0[1])
@@ -36,7 +36,8 @@ func searchInterval(x []float32, delta, lambda float32, x0 []float32) []float32 
 		h *= 2
 		k[2] = k[1] + h
 	}
-	return k
+
+	return k[1:3]
 }
 
 func calculateFunction(x, y float32, number int) float32 {
@@ -51,12 +52,13 @@ func calculateFunction(x, y float32, number int) float32 {
 	return 0
 }
 
-func search(dx float32, x0 []float32) ([]float32, int) {
+func search(dx float32, x0 Input) ([]float32, int) {
 	var flag int
-	var x []float32
-	copy(x, x0)
-	for i := 0; i < len(x0); i++ {
-		var cx []float32
+	x := make([]float32, len(x0.X0))
+
+	copy(x, x0.X0)
+	for i := 0; i < len(x0.X0); i++ {
+		cx := make([]float32, len(x))
 		copy(cx, x)
 		cx[i] += dx
 		if calculateFunction(cx[0], cx[1], 1) <= calculateFunction(x[0], x[1], 1) {
@@ -71,11 +73,15 @@ func search(dx float32, x0 []float32) ([]float32, int) {
 		}
 	}
 	if flag == 0 {
-		return x0, flag
+		return x0.X0, flag
 	}
 	return x, flag
 }
+func GoldenSearch(x []float32) float32 {
+	var lamda float32
 
+	return lamda
+}
 func main() {
 	inputRaw, err := os.ReadFile("input.json")
 	if err != nil {
@@ -88,14 +94,14 @@ func main() {
 	}
 
 	for input.Dx >= input.Eps {
-		x, flag := search(input.Dx, input.X0)
+		x, flag := search(input.Dx, input)
 		if flag == 0 {
 			input.Dx /= 10
-			continue
+
 		}
 		lam := searchInterval(x, input.Dx, input.Lambda, input.X0)
 		fmt.Println(lam)
-		break
+		copy(input.X0, x)
 	}
 
 }
