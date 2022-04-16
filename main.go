@@ -27,7 +27,7 @@ func searchInterval(x []float32, delta, lambda float32, x0 []float32) []float32 
 	} else {
 		k[0] = lambda
 		k[1] = lambda - delta
-		h = -2 * delta
+		h = -delta
 	}
 	h *= 2
 	k[2] = k[0] + h
@@ -68,7 +68,7 @@ func search(dx float32, x0 Input) ([]float32, int) {
 		} else {
 			cx[i] -= 2 * dx
 			if calculateFunction(cx[0], cx[1], 1) <= calculateFunction(x[0], x[1], 1) {
-				x[i] += dx
+				x[i] -= dx
 				flag = 1
 			}
 		}
@@ -128,8 +128,9 @@ func main() {
 		}
 		lam := searchInterval(x, input.Dx, input.Lambda, input.X0)
 		input.Lambda = GoldenSearch(lam, input.Eps, input.X0)
-		fmt.Println(input.Lambda)
-		copy(input.X0, x)
+		input.X0[0] = input.X0[0] + input.Lambda*(x[0]-input.X0[0])
+		input.X0[1] = input.X0[1] + input.Lambda*(x[1]-input.X0[1])
+		fmt.Println(input.X0)
 	}
 
 }
