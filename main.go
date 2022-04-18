@@ -20,7 +20,7 @@ func searchInterval(x []float64, delta, lambda float64, x0 []float64) []float64 
 	var h float64
 	k[0] = x0[0] + lambda*(x[0]-x0[0])
 	k[1] = x0[1] + lambda*(x[1]-x0[1])
-	if calculateFunction(k[0], k[1], 3) > calculateFunction(x0[0]+(lambda+delta)*(x[0]-x0[0]), x0[1]+(lambda+delta)*(x[1]-x0[1]), 3) {
+	if calculateFunction(k[0], k[1], 1) > calculateFunction(x0[0]+(lambda+delta)*(x[0]-x0[0]), x0[1]+(lambda+delta)*(x[1]-x0[1]), 1) {
 		k[0] = lambda
 		k[1] = lambda + delta
 		h = delta
@@ -32,7 +32,7 @@ func searchInterval(x []float64, delta, lambda float64, x0 []float64) []float64 
 	}
 	h *= 2
 	k[2] = k[0] + h
-	for calculateFunction(x0[0]+k[1]*(x[0]-x0[0]), x0[1]+k[1]*(x[1]-x0[1]), 3) > calculateFunction(x0[0]+k[2]*(x[0]-x0[0]), x0[1]+k[2]*(x[1]-x0[1]), 3) {
+	for calculateFunction(x0[0]+k[1]*(x[0]-x0[0]), x0[1]+k[1]*(x[1]-x0[1]), 1) > calculateFunction(x0[0]+k[2]*(x[0]-x0[0]), x0[1]+k[2]*(x[1]-x0[1]), 1) {
 		k[0] = k[1]
 		k[1] = k[2]
 		h *= 2
@@ -104,12 +104,12 @@ func search(dx float64, x0 Input) ([]float64, int) {
 		cx := make([]float64, len(x))
 		copy(cx, x)
 		cx[i] += dx
-		if calculateFunction(cx[0], cx[1], 3) <= calculateFunction(x[0], x[1], 3) {
+		if calculateFunction(cx[0], cx[1], 1) <= calculateFunction(x[0], x[1], 1) {
 			x[i] += dx
 			flag = 1
 		} else {
 			cx[i] -= 2 * dx
-			if calculateFunction(cx[0], cx[1], 3) <= calculateFunction(x[0], x[1], 3) {
+			if calculateFunction(cx[0], cx[1], 1) <= calculateFunction(x[0], x[1], 1) {
 				x[i] -= dx
 				flag = 1
 			}
@@ -160,8 +160,8 @@ func GoldenSearch(x []float64, eps float64, x0 []float64) float64 {
 	phi2 = (math.Sqrt(5.0) - 1) / 2
 	x1 = a + (b-a)*phi1
 	x2 = a + (b-a)*phi2
-	f1 = calculateFunction(x0[0]+(x1)*(x[0]-x0[0]), x0[1]+(x1)*(x[1]-x0[1]), 3)
-	f2 = calculateFunction(x0[0]+(x2)*(x[0]-x0[0]), x0[1]+(x2)*(x[1]-x0[1]), 3)
+	f1 = calculateFunction(x0[0]+(x1)*(x[0]-x0[0]), x0[1]+(x1)*(x[1]-x0[1]), 1)
+	f2 = calculateFunction(x0[0]+(x2)*(x[0]-x0[0]), x0[1]+(x2)*(x[1]-x0[1]), 1)
 	iter += 2
 	for (math.Abs(a - b)) > eps {
 		if f1 > f2 {
@@ -169,13 +169,13 @@ func GoldenSearch(x []float64, eps float64, x0 []float64) float64 {
 			x1 = x2
 			f1 = f2
 			x2 = a + phi2*(b-a)
-			f2 = calculateFunction(x0[0]+(x2)*(x[0]-x0[0]), x0[1]+(x2)*(x[1]-x0[1]), 3)
+			f2 = calculateFunction(x0[0]+(x2)*(x[0]-x0[0]), x0[1]+(x2)*(x[1]-x0[1]), 1)
 		} else {
 			b = x2
 			x2 = x1
 			f2 = f1
 			x1 = a + phi1*(b-a)
-			f1 = calculateFunction(x0[0]+(x1)*(x[0]-x0[0]), x0[1]+(x1)*(x[1]-x0[1]), 3)
+			f1 = calculateFunction(x0[0]+(x1)*(x[0]-x0[0]), x0[1]+(x1)*(x[1]-x0[1]), 1)
 		}
 
 		iter++
