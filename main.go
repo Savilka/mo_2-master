@@ -15,7 +15,7 @@ type Input struct {
 	Number int       `json:"number"`
 }
 
-var numberOfFunc = 3
+var numberOfFunc = 2
 
 func searchInterval(x []float64, delta, lambda float64, x0 []float64) []float64 {
 	k := make([]float64, len(x0)+1)
@@ -49,26 +49,26 @@ func searchIntervalDescent(delta, lambda float64, x0 []float64, s []float64) ([]
 	var h float64
 	k[0] = x0[0] + lambda*s[0]
 	k[1] = x0[1] + lambda*s[1]
-	var flag float64
+	//var flag float64
 	if calculateFunction(k[0], k[1], numberOfFunc) > calculateFunction(x0[0]+(lambda+delta)*s[0], x0[1]+(lambda+delta)*s[1], numberOfFunc) {
 		k[0] = lambda
 		k[1] = lambda + delta
 		h = delta
-		flag = 1
+		//flag = 1
 
 	} else {
 		k[0] = lambda
 		k[1] = lambda - delta
 		h = -delta
-		flag = -1
+		//flag = -1
 	}
 	h *= 2
 	k[2] = k[0] + h
 	for calculateFunction(x0[0]+k[1]*s[0], x0[1]+k[1]*s[1], numberOfFunc) > calculateFunction(x0[0]+k[2]*s[0], x0[1]+k[2]*s[1], numberOfFunc) {
 		k[0] = k[1]
 		k[1] = k[2]
-		h = h + flag*delta
-		//h *= 2
+		//h = h + flag*delta
+		h *= 2
 		k[2] = k[1] + h
 		iter += 1
 	}
@@ -91,6 +91,16 @@ func calculateGrad(x, y float64, n int) []float64 {
 	case 1:
 		g[0] = 202*x - 200*y - 2
 		g[1] = 200*y - 200*x
+		return g
+	case 2:
+		g[0] = (-1)*400*x*(y-x*x) + 2*x - 2
+		g[1] = 200*y - 200*x*x
+		return g
+	case 3:
+		g[0] = 2/3*(x-1)*math.Exp((-1)*(1/9)*(x-1)*(x-1)-(y-3)*(y-3)*(1/9)) - (1-x)*
+			math.Exp((-1)*(x-1)*(x-1)*(1/4)-(y-1)*(y-1)*(1/4))
+		g[1] = (-1)*(1-y)*math.Exp((-1)*(x-1)*(x-1)*(1/4)-(y-1)*(y-1)*(1/4)) + 2/3*(y-3)*
+			math.Exp((-1)*(1/9)*(x-1)*(x-1)-(y-3)*(y-3)*(1/9))
 		return g
 	}
 	return g
@@ -230,7 +240,7 @@ func main() {
 		x1prev := 1.
 		for math.Sqrt(x0prev*x0prev+x1prev*x1prev) > input.Eps {
 			s := norm(g)
-			lam, iter := searchIntervalDescent(input.Dx, input.Lambda, input.X0, s)
+			lam, _ := searchIntervalDescent(input.Dx, input.Lambda, input.X0, s)
 			input.Lambda = GoldenSearchDescent(lam, input.Eps, input.X0, s)
 			x0prev = input.X0[0]
 			x1prev = input.X0[1]
@@ -239,7 +249,9 @@ func main() {
 			x0prev -= input.X0[0]
 			x1prev -= input.X0[1]
 			g = calculateGrad(input.X0[0], input.X0[1], numberOfFunc)
+
 			fmt.Println(input.X0, iter)
+			iter++
 		}
 	}
 }
