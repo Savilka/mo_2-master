@@ -15,7 +15,7 @@ type Input struct {
 	Number int       `json:"number"`
 }
 
-var numberOfFunc = 2
+var numberOfFunc = 3
 
 func searchInterval(x []float64, delta, lambda float64, x0 []float64) []float64 {
 	k := make([]float64, len(x0)+1)
@@ -87,6 +87,7 @@ func norm(x []float64) []float64 {
 
 func calculateGrad(x, y float64, n int) []float64 {
 	g := make([]float64, 2)
+
 	switch n {
 	case 1:
 		g[0] = 202*x - 200*y - 2
@@ -97,10 +98,12 @@ func calculateGrad(x, y float64, n int) []float64 {
 		g[1] = 200*y - 200*x*x
 		return g
 	case 3:
-		g[0] = 2/3*(x-1)*math.Exp((-1)*(1/9)*(x-1)*(x-1)-(y-3)*(y-3)*(1/9)) - (1-x)*
-			math.Exp((-1)*(x-1)*(x-1)*(1/4)-(y-1)*(y-1)*(1/4))
-		g[1] = (-1)*(1-y)*math.Exp((-1)*(x-1)*(x-1)*(1/4)-(y-1)*(y-1)*(1/4)) + 2/3*(y-3)*
-			math.Exp((-1)*(1/9)*(x-1)*(x-1)-(y-3)*(y-3)*(1/9))
+		g[0] = (2*(x-1)*math.Exp(((-1)*(x-1)*(x-1))/9-((y-3)*(y-3))/9))/3 + (x-1)*
+			math.Exp(((-1)*(x-1)*(x-1))/4-((y-1)*(y-1))/4)
+
+		g[1] = (2*(y-3)*math.Exp((-1)*(x-1)*(x-1)/9-(y-3)*(y-3)/9))/3 + (y-1)*
+			math.Exp((-1)*(x-1)*(x-1)/4-(y-1)*(y-1)/4)
+
 		return g
 	}
 	return g
