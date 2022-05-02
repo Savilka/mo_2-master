@@ -17,7 +17,7 @@ type Input struct {
 
 var numberOfFunc = 3
 
-func searchInterval(x []float64, delta, lambda float64, x0 []float64) []float64 {
+func searchInterval(x []float64, delta, lambda float64, x0 []float64, iter *int64) []float64 {
 	k := make([]float64, len(x0)+1)
 	var h float64
 	k[0] = x0[0] + lambda*(x[0]-x0[0])
@@ -26,11 +26,13 @@ func searchInterval(x []float64, delta, lambda float64, x0 []float64) []float64 
 		k[0] = lambda
 		k[1] = lambda + delta
 		h = delta
+		*iter += 2
 
 	} else {
 		k[0] = lambda
 		k[1] = lambda - delta
 		h = -delta
+		*iter += 2
 	}
 	h *= 2
 	k[2] = k[0] + h
@@ -39,13 +41,14 @@ func searchInterval(x []float64, delta, lambda float64, x0 []float64) []float64 
 		k[1] = k[2]
 		h *= 2
 		k[2] = k[1] + h
+		*iter += 2
 	}
-
+	//k[1] = k[2]
 	return k[1:3]
 }
-func searchIntervalDescent(delta, lambda float64, x0 []float64, s []float64) ([]float64, int) {
+func searchIntervalDescent(delta, lambda float64, x0 []float64, s []float64, iter *int64) []float64 {
 	k := make([]float64, len(x0)+1)
-	var iter = 0
+
 	var h float64
 	k[0] = x0[0] + lambda*s[0]
 	k[1] = x0[1] + lambda*s[1]
@@ -54,12 +57,14 @@ func searchIntervalDescent(delta, lambda float64, x0 []float64, s []float64) ([]
 		k[0] = lambda
 		k[1] = lambda + delta
 		h = delta
+		*iter += 2
 		//flag = 1
 
 	} else {
 		k[0] = lambda
 		k[1] = lambda - delta
 		h = -delta
+		*iter += 2
 		//flag = -1
 	}
 	h *= 2
@@ -70,18 +75,18 @@ func searchIntervalDescent(delta, lambda float64, x0 []float64, s []float64) ([]
 		//h = h + flag*delta
 		h *= 2
 		k[2] = k[1] + h
-		iter += 1
+		*iter += 2
 	}
-
-	return k[1:3], iter
+	//k[1] = k[2]
+	return k[1:3]
 }
 
 func norm(x []float64) []float64 {
 	n := make([]float64, 2)
 	x0 := x[0]
 	x1 := x[1]
-	n[0] = x[0] / math.Sqrt(x0*x0+x1*x1)
-	n[1] = x[1] / math.Sqrt(x0*x0+x1*x1)
+	n[0] -= x[0] / math.Sqrt(x0*x0+x1*x1)
+	n[1] -= x[1] / math.Sqrt(x0*x0+x1*x1)
 	return n
 }
 
@@ -111,7 +116,7 @@ func calculateGrad(x, y float64, n int) []float64 {
 func calculateFunction(x, y float64, number int) float64 {
 	switch number {
 	case 1:
-		return 100*(y-x)*(y-x) + (1-x)*(1-x)
+		return 100*math.Pow((y-x), 2) + math.Pow((1-x), 2)
 	case 2:
 		return 100*(y-x*x)*(y-x*x) + (1-x)*(1-x)
 	case 3:
@@ -124,7 +129,7 @@ func calculateFunction(x, y float64, number int) float64 {
 	return 0
 }
 
-func search(dx float64, x0 Input) ([]float64, int) {
+func search(dx float64, x0 Input, iter *int64) ([]float64, int) {
 	var flag int
 	x := make([]float64, len(x0.X0))
 	copy(x, x0.X0)
@@ -135,11 +140,13 @@ func search(dx float64, x0 Input) ([]float64, int) {
 		if calculateFunction(cx[0], cx[1], numberOfFunc) <= calculateFunction(x[0], x[1], numberOfFunc) {
 			x[i] += dx
 			flag = 1
+			*iter += 2
 		} else {
 			cx[i] -= 2 * dx
 			if calculateFunction(cx[0], cx[1], numberOfFunc) <= calculateFunction(x[0], x[1], numberOfFunc) {
 				x[i] -= dx
 				flag = 1
+				*iter += 2
 			}
 		}
 	}
@@ -148,9 +155,9 @@ func search(dx float64, x0 Input) ([]float64, int) {
 	}
 	return x, flag
 }
-func GoldenSearchDescent(x []float64, eps float64, x0 []float64, s []float64) float64 {
+func GoldenSearchDescent(x []float64, eps float64, x0 []float64, s []float64, iter *int64) float64 {
 	var a, b, x1, x2, phi1, phi2, f1, f2 float64
-	var iter int
+
 	a = x[0]
 	b = x[1]
 	phi1 = (3 - math.Sqrt(5.0)) / 2
@@ -159,29 +166,30 @@ func GoldenSearchDescent(x []float64, eps float64, x0 []float64, s []float64) fl
 	x2 = a + (b-a)*phi2
 	f1 = calculateFunction(x0[0]+(x1)*s[0], x0[1]+(x1)*s[1], numberOfFunc)
 	f2 = calculateFunction(x0[0]+(x2)*s[0], x0[1]+(x2)*s[1], numberOfFunc)
-	iter += 2
-	for (math.Abs(a - b)) > eps {
+	*iter += 2
+	for (math.Abs(a - b)) >= eps {
 		if f1 > f2 {
 			a = x1
 			x1 = x2
 			f1 = f2
 			x2 = a + phi2*(b-a)
 			f2 = calculateFunction(x0[0]+(x2)*s[0], x0[1]+(x2)*s[1], numberOfFunc)
+			*iter++
 		} else {
 			b = x2
 			x2 = x1
 			f2 = f1
 			x1 = a + phi1*(b-a)
 			f1 = calculateFunction(x0[0]+(x1)*s[0], x0[1]+(x1)*s[1], numberOfFunc)
+			*iter++
 		}
 
-		iter++
 	}
 	return (a + b) / 2
 }
-func GoldenSearch(x, lam []float64, eps float64, x0 []float64) float64 {
+func GoldenSearch(x, lam []float64, eps float64, x0 []float64, iter *int64) float64 {
 	var a, b, x1, x2, phi1, phi2, f1, f2 float64
-	var iter int
+
 	a = lam[0]
 	b = lam[1]
 	phi1 = (3 - math.Sqrt(5.0)) / 2
@@ -190,7 +198,7 @@ func GoldenSearch(x, lam []float64, eps float64, x0 []float64) float64 {
 	x2 = a + (b-a)*phi2
 	f1 = calculateFunction(x0[0]+(x1)*(x[0]-x0[0]), x0[1]+(x1)*(x[1]-x0[1]), numberOfFunc)
 	f2 = calculateFunction(x0[0]+(x2)*(x[0]-x0[0]), x0[1]+(x2)*(x[1]-x0[1]), numberOfFunc)
-	iter += 2
+	*iter += 2
 	for (math.Abs(a - b)) > eps {
 		if f1 > f2 {
 			a = x1
@@ -198,20 +206,23 @@ func GoldenSearch(x, lam []float64, eps float64, x0 []float64) float64 {
 			f1 = f2
 			x2 = a + phi2*(b-a)
 			f2 = calculateFunction(x0[0]+(x2)*(x[0]-x0[0]), x0[1]+(x2)*(x[1]-x0[1]), numberOfFunc)
+			*iter++
 		} else {
 			b = x2
 			x2 = x1
 			f2 = f1
 			x1 = a + phi1*(b-a)
 			f1 = calculateFunction(x0[0]+(x1)*(x[0]-x0[0]), x0[1]+(x1)*(x[1]-x0[1]), numberOfFunc)
+			*iter++
 		}
 
-		iter++
 	}
 	return (a + b) / 2
 }
 func main() {
 	var iter = 0
+	var iterFunction int64
+	iterFunction = 0
 	inputRaw, err := os.ReadFile("input.json")
 	if err != nil {
 		return
@@ -225,26 +236,26 @@ func main() {
 	switch input.Number {
 	case 1:
 		for input.Dx >= input.Eps {
-			x, flag := search(input.Dx, input)
+			x, flag := search(input.Dx, input, &iterFunction)
 			if flag == 0 {
 				input.Dx /= 10
 				continue
 			}
-			lam := searchInterval(x, input.Dx, input.Lambda, input.X0)
-			input.Lambda = GoldenSearch(x, lam, input.Eps, input.X0)
+			lam := searchInterval(x, input.Dx, input.Lambda, input.X0, &iterFunction)
+			input.Lambda = GoldenSearch(x, lam, input.Eps, input.X0, &iterFunction)
 			input.X0[0] = input.X0[0] + input.Lambda*(x[0]-input.X0[0])
 			input.X0[1] = input.X0[1] + input.Lambda*(x[1]-input.X0[1])
 			iter++
-			fmt.Println(input.X0, iter)
+			fmt.Println(input.X0, iter, iterFunction, calculateFunction(input.X0[0], input.X0[1], numberOfFunc))
 		}
 	case 2:
 		g := calculateGrad(input.X0[0], input.X0[1], numberOfFunc)
 		x0prev := 1.
 		x1prev := 1.
-		for math.Sqrt(x0prev*x0prev+x1prev*x1prev) > input.Eps {
+		for math.Sqrt(x0prev*x0prev+x1prev*x1prev) >= input.Eps {
 			s := norm(g)
-			lam, _ := searchIntervalDescent(input.Dx, input.Lambda, input.X0, s)
-			input.Lambda = GoldenSearchDescent(lam, input.Eps, input.X0, s)
+			lam := searchIntervalDescent(input.Dx, input.Lambda, input.X0, s, &iterFunction)
+			input.Lambda = GoldenSearchDescent(lam, input.Eps, input.X0, s, &iterFunction)
 			x0prev = input.X0[0]
 			x1prev = input.X0[1]
 			input.X0[0] = input.X0[0] + input.Lambda*s[0]
@@ -252,9 +263,9 @@ func main() {
 			x0prev -= input.X0[0]
 			x1prev -= input.X0[1]
 			g = calculateGrad(input.X0[0], input.X0[1], numberOfFunc)
-
-			fmt.Println(input.X0, iter)
 			iter++
+			fmt.Println(input.X0, iter, iterFunction, calculateFunction(input.X0[0], input.X0[1], numberOfFunc))
+
 		}
 	}
 }
