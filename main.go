@@ -15,7 +15,7 @@ type Input struct {
 	Number int       `json:"number"`
 }
 
-var numberOfFunc = 1
+var numberOfFunc = 2
 
 func searchInterval(x []float64, delta, lambda float64, x0 []float64, iter *int64) []float64 {
 	k := make([]float64, len(x0)+1)
@@ -255,8 +255,12 @@ func main() {
 			input.X0[1] = input.X0[1] + input.Lambda*(x[1]-input.X0[1])
 			x0prev -= input.X0[0]
 			x1prev -= input.X0[1]
+			cos := (input.X0[0]*s[0] + input.X0[1]*s[1]) /
+				(math.Sqrt(input.X0[0]*input.X0[0]+input.X0[1]*input.X0[1]) * math.Sqrt(s[0]*s[0]+s[1]*s[1]))
 			iter++
-			fmt.Println(input.X0, iter, iterFunction, calculateFunction(input.X0[0], input.X0[1], numberOfFunc), math.Abs(x0prev), math.Abs(x1prev), f-calculateFunction(input.X0[0], input.X0[1], numberOfFunc), s[0], s[1])
+			fmt.Println(input.X0, iter, iterFunction, calculateFunction(input.X0[0], input.X0[1], numberOfFunc),
+				math.Abs(x0prev), math.Abs(x1prev), f-calculateFunction(input.X0[0], input.X0[1], numberOfFunc),
+				s[0], s[1], math.Acos(cos))
 		}
 	case 2:
 		g := calculateGrad(input.X0[0], input.X0[1], numberOfFunc)
@@ -273,9 +277,13 @@ func main() {
 			input.X0[1] = input.X0[1] + input.Lambda*s[1]
 			x0prev -= input.X0[0]
 			x1prev -= input.X0[1]
+			cos := (input.X0[0]*s[0] + input.X0[1]*s[1]) /
+				(math.Sqrt(input.X0[0]*input.X0[0]+input.X0[1]*input.X0[1]) * math.Sqrt(s[0]*s[0]+s[1]*s[1]))
 			g = calculateGrad(input.X0[0], input.X0[1], numberOfFunc)
 			iter++
-			fmt.Println(input.X0, iter, iterFunction, calculateFunction(input.X0[0], input.X0[1], numberOfFunc), math.Abs(x0prev), math.Abs(x1prev), math.Abs(f-calculateFunction(input.X0[0], input.X0[1], numberOfFunc)), s[0], s[1])
+			fmt.Println(input.X0, iter, iterFunction, calculateFunction(input.X0[0], input.X0[1], numberOfFunc),
+				math.Abs(x0prev), math.Abs(x1prev),
+				math.Abs(f-calculateFunction(input.X0[0], input.X0[1], numberOfFunc)), s[0], s[1], math.Acos(cos))
 
 		}
 	}
