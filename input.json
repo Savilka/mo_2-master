@@ -1,11 +1,11 @@
 {
   "x0": [
-   3,
+   10,
   2
   ],
-  "dx": 1e-2,
-  "eps": 1e-3,
-  "lambda": 1,
-  "number": 2,
-  "penalty": 0.05
+  "dx": 1e-3,
+  "eps": 1e-6,
+  "lambda": 10,
+  "number": 1,
+  "penalty": 1
 }

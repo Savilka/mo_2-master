@@ -19,16 +19,16 @@ type Input struct {
 }
 
 // checking the condition of penalt functions
-func penalty(x, y, eps float64, number int) bool {
+func penalty(x, y, eps float64, number int, r float64) bool {
 	switch number {
 	case 1:
-		if 100*math.Abs(Functiong(x, y)) <= 1e-6 {
+		if 10*math.Abs(Functiong(x, y)) <= 1e-6 {
 			return true
 		} else {
 			return false
 		}
 	case 2:
-		if 100*math.Abs(Functionh(x, y)) <= 1e-6 {
+		if 10*math.Abs(Functionh(x, y)) <= 1e-6 {
 			return true
 		} else {
 			return false
@@ -178,19 +178,12 @@ func main() {
 		return
 	}
 	var step = input.Dx
-	x0prev := 1.
-	x1prev := 1.
-	for !penalty(input.X0[0], input.X0[1], input.Eps, numberOfFunc) {
+	for !penalty(input.X0[0], input.X0[1], input.Eps, numberOfFunc, input.R) {
 		input.Dx = step
-		input.R *= 100
+		input.R *= 2
 		for input.Dx >= input.Eps {
-			x0prev = input.X0[0]
-			x1prev = input.X0[1]
-			//var f = penaltyFunction(input.X0[0], input.X0[1], input.R, numberOfFunc)
+
 			x, flag := search(input.Dx, input, &iterFunction)
-			s := make([]float64, 2)
-			s[0] = x[0] - input.X0[0]
-			s[1] = x[1] - input.X0[1]
 			if flag == 0 {
 				input.Dx /= 10
 				continue
@@ -199,10 +192,9 @@ func main() {
 			input.Lambda = GoldenSearch(x, lam, input.Eps, input.R, input.X0, &iterFunction)
 			input.X0[0] = input.X0[0] + input.Lambda*(x[0]-input.X0[0])
 			input.X0[1] = input.X0[1] + input.Lambda*(x[1]-input.X0[1])
-			x0prev -= input.X0[0]
-			x1prev -= input.X0[1]
+
 			iter++
-			//fmt.Println(input.X0, iter, iterFunction, penaltyFunction(input.X0[0], input.X0[1], input.R, numberOfFunc), math.Abs(x0prev), math.Abs(x1prev), f-penaltyFunction(input.X0[0], input.X0[1], input.R, numberOfFunc), s[0], s[1])
+			fmt.Println(input.X0, penaltyFunction(input.X0[0], input.X0[1], input.R, numberOfFunc), input.R)
 		}
 	}
 	fmt.Println(input.X0[0], input.X0[1])
