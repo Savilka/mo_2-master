@@ -22,13 +22,13 @@ type Input struct {
 func penalty(x, y, eps float64, number int, r float64) bool {
 	switch number {
 	case 1:
-		if 10*math.Abs(Functiong(x, y)) <= 1e-6 {
+		if 2*math.Abs(Functiong(x, y)) <= 1e-6 {
 			return true
 		} else {
 			return false
 		}
 	case 2:
-		if 10*math.Abs(Functionh(x, y)) <= 1e-6 {
+		if 2*math.Abs(Functionh(x, y)) <= 1e-6 {
 			return true
 		} else {
 			return false
@@ -39,7 +39,7 @@ func penalty(x, y, eps float64, number int, r float64) bool {
 
 }
 
-var numberOfFunc = 2 // mb dont need
+var numberOfFunc = 1 // mb dont need
 
 func Functiong(x, y float64) float64 { //first function
 	return -x - y + 5
@@ -178,7 +178,7 @@ func main() {
 		return
 	}
 	var step = input.Dx
-	for !penalty(input.X0[0], input.X0[1], input.Eps, numberOfFunc, input.R) {
+	for !penalty(input.X0[0], input.X0[1], input.Eps, numberOfFunc, input.R) && input.R < 10000000000 {
 		input.Dx = step
 		input.R *= 2
 		for input.Dx >= input.Eps {
