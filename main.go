@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-
 	"math"
 	"os"
 )
@@ -39,19 +38,19 @@ func penalty(x, y, eps float64, number int, r float64) bool {
 
 }
 
-var numberOfFunc = 1 // mb dont need
+var numberOfFunc = 2 // mb dont need
 
 func Functiong(x, y float64) float64 { //first function
 	return -x - y + 5
 }
 func FunctionG(x, y float64) float64 {
-	return math.Pow((Functiong(x, y)+math.Abs(Functiong(x, y)))/2, 2)
+	return math.Pow((Functiong(x, y)+math.Abs(Functiong(x, y)))/2, 4)
 }
 func Functionh(x, y float64) float64 { // second function
 	return y - x - 2
 }
 func FunctionH(x, y float64) float64 {
-	return math.Pow(math.Abs(Functionh(x, y)), 1)
+	return math.Pow(math.Abs(Functionh(x, y)), 4)
 }
 
 //given function
@@ -178,9 +177,9 @@ func main() {
 		return
 	}
 	var step = input.Dx
-	for !penalty(input.X0[0], input.X0[1], input.Eps, numberOfFunc, input.R) && input.R < 10000000000 {
+	for !penalty(input.X0[0], input.X0[1], input.Eps, numberOfFunc, input.R) && input.R < 10000000 {
 		input.Dx = step
-		input.R *= 2
+
 		for input.Dx >= input.Eps {
 
 			x, flag := search(input.Dx, input, &iterFunction)
@@ -194,8 +193,17 @@ func main() {
 			input.X0[1] = input.X0[1] + input.Lambda*(x[1]-input.X0[1])
 
 			iter++
-			fmt.Println(input.X0, penaltyFunction(input.X0[0], input.X0[1], input.R, numberOfFunc), input.R)
+
 		}
+		switch numberOfFunc {
+		case 1:
+			fmt.Println(input.R, input.X0, penaltyFunction(input.X0[0], input.X0[1], input.R, numberOfFunc), FunctionG(input.X0[0], input.X0[1]))
+
+		case 2:
+			fmt.Println(input.R, input.X0, penaltyFunction(input.X0[0], input.X0[1], input.R, numberOfFunc), FunctionH(input.X0[0], input.X0[1]))
+
+		}
+		input.R *= 2
 	}
-	fmt.Println(input.X0[0], input.X0[1])
+
 }
